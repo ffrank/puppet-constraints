@@ -80,7 +80,7 @@ module Puppet
       fail "properties must be specified" unless self[:properties]
     end
 
-    def in_valid_catalog?
+    def prerun_check
       self[:resource].each do |reference|
         resource = self.catalog.resource(reference.to_s)
         raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource
@@ -92,21 +92,15 @@ module Puppet
             case constraint_type
             when :allowed
               next if constraint_values.include?(resource[property])
-              return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
+              raise "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
             when :forbidden
               next unless constraint_values.include?(resource[property])
-              return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+              raise "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
             end
           end
         end
       end
       true
-    end
-
-    def constraint_fail(msg)
-      Puppet.err "constraint #{self.ref} check failed - #{msg}"
-      # always return false - this will be the return value of in_valid_catalog?
-      false
     end
 
     @doc = "Constraints allow modules to express dependencies on resources 

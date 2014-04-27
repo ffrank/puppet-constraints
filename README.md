@@ -1,6 +1,8 @@
 puppet-constraints
 ==================
 
+[![Build Status](https://travis-ci.org/ffrank/puppet-constraints.png)](https://travis-ci.org/ffrank/puppet-constraints)
+
 Puppet module that introduces the constraint type.
 
 Origin: https://github.com/ffrank/puppet-constraints

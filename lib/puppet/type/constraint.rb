@@ -6,7 +6,9 @@ module Puppet
 
       # TODO validation
 
-      # TODO support for Type[name1,name2,...] and general arrays (munge?)
+      munge do |value|
+        [ value ].flatten
+      end
     end
 
     newparam(:properties) do
@@ -75,20 +77,22 @@ module Puppet
     end
 
     def in_valid_catalog?
-      resource = self.catalog.resource(self[:resource].to_s)
-      raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource
+      self[:resource].each do |reference|
+        resource = self.catalog.resource(reference.to_s)
+        raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource
 
-      Puppet.debug "Checking constraint on #{self[:resource]} #{self[:properties].inspect}"
+        Puppet.debug "Checking constraint on #{self[:resource]} #{self[:properties].inspect}"
 
-      self[:properties].each_pair do |property,constraint|
-        constraint.each_pair do |constraint_type,constraint_values|
-          case constraint_type
-          when :allowed
-            next if constraint_values.include?(resource[property])
-            return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
-          when :forbidden
-            next unless constraint_values.include?(resource[property])
-            return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+        self[:properties].each_pair do |property,constraint|
+          constraint.each_pair do |constraint_type,constraint_values|
+            case constraint_type
+            when :allowed
+              next if constraint_values.include?(resource[property])
+              return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
+            when :forbidden
+              next unless constraint_values.include?(resource[property])
+              return constraint_fail "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+            end
           end
         end
       end

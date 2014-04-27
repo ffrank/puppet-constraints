@@ -28,17 +28,17 @@ Currently, the following syntaxes are implemented:
 
     # These are all equivalent
     constraint {
-      'foo': resource => Package['apache2'],
-             { ensure => present };
-      'bar': resource => Package['apache2'],
-             { ensure => [ present ] };
-      'baz': resource => Package['apache2'],
-             { ensure => { allowed => [ present ] } };
+      'foo': resource   => Package['apache2'],
+             properties => { ensure => present };
+      'bar': resource   => Package['apache2'],
+             properties => { ensure => [ present ] };
+      'baz': resource   => Package['apache2'],
+             properties => { ensure => { allowed => [ present ] } };
     }
     # Blacklist instead of whitelist
     constraint {
-      'oof': resource => Package['apache2'],
-             { ensure => { forbid => [ absent, purged ] } };
+      'oof': resource   => Package['apache2'],
+             properties => { ensure => { forbid => [ absent, purged ] } };
     }
 
 Any failed constraint causes the catalog to be considered invalid (agent side).

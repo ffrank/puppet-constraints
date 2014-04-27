@@ -102,11 +102,11 @@ module Puppet
     # although the practice is questionable in terms of code semantics.
     unless Puppet::Type.instance_methods(false).include?(:prerun_check)
       autorequire(:constraint) do
-        prerun_check
+        pre_run_check
       end
     end
 
-    def prerun_check
+    def pre_run_check
       self[:resource].each do |reference|
         resource = self.catalog.resource(reference.to_s)
         raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource

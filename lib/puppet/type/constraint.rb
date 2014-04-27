@@ -68,6 +68,12 @@ module Puppet
       isnamevar
     end
 
+    validate do
+      raise ArgumentError, "resource must be specified" \
+        if !self[:resource] or self[:resource].empty?
+      raise ArgumentError, "properties must be specified" unless self[:properties]
+    end
+
     def in_valid_catalog?
       resource = self.catalog.resource(self[:resource].to_s)
       raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource

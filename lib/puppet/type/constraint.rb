@@ -24,6 +24,18 @@ module Puppet
       validate do |value|
         fail "properties must be a hash" unless value.is_a?(Hash)
 
+        value.each do |key,val|
+          fail "property #{key} must allow a non-empty value, not #{val.inspect}" \
+            if val.empty?
+          next unless val.is_a?(Hash)
+          fail "property #{key} was given a hash with keys other than 'allowed'/'forbidden' (#{val.keys * ','})" \
+            unless val.keys.reject { |k| [ :allowed, :forbidden ].include?(k.intern) }.empty?
+          fail "property #{key} can only take an allowed or a forbidden list, not [#{val.keys * ','}]" \
+            if val.keys.length > 1
+          fail "property #{key} must have an array or string for its value list, not #{val.values[0].inspect}" \
+            if val.values[0].is_a?(Hash) or val.values[0].empty?
+        end
+
 	# TODO: check the structure and content of the hash
       end
 

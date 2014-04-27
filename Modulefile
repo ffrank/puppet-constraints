@@ -7,8 +7,8 @@ description 'The constraint type aims to lift the need for both
   defines a set of allowed and/or forbidden resource properties, e.g.
 
     constraint {
-      "foo": resource => Package["apache2"],
-             { ensure => present };
+      "foo": resource   => Package["apache2"],
+             properties => { ensure => present };
     }
 
   See README.md for more examples.'

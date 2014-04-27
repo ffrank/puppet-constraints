@@ -73,6 +73,10 @@ module Puppet
     validate do
       raise ArgumentError, "resource must be specified" \
         if !self[:resource] or self[:resource].empty?
+      # this check cannot move into parameter validation because the
+      # conversion to Puppet::Resource has not taken place yet then
+      raise ArgumentError, "resource must be a(n array of) resource reference(s)" \
+        if ! self[:resource].select { |res| ! res.is_a? Puppet::Resource }.empty?
       raise ArgumentError, "properties must be specified" unless self[:properties]
     end
 

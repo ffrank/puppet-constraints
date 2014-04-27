@@ -80,6 +80,18 @@ module Puppet
       fail "properties must be specified" unless self[:properties]
     end
 
+    # Compatibility hack: we have no lifecycle method of resources' that fits
+    # the requirements very well, which are
+    # - run this once the catalog is completely populated with
+    #   Puppet::Type instances for the resources
+    # - halt the transaction in case of errors
+    #
+    # By faking the ability to autorequire, we can meet those requirements,
+    # although the practice is questionable in terms of code semantics.
+    autorequire(:constraint) do
+      prerun_check
+    end
+
     def prerun_check
       self[:resource].each do |reference|
         resource = self.catalog.resource(reference.to_s)
@@ -92,10 +104,10 @@ module Puppet
             case constraint_type
             when :allowed
               next if constraint_values.include?(resource[property])
-              raise "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
+              raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
             when :forbidden
               next unless constraint_values.include?(resource[property])
-              raise "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+              raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
             end
           end
         end

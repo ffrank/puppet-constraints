@@ -30,6 +30,18 @@ describe constraint do
         described_class.new(:name => 'foo', :resource => resource, :properties => []).validate
       }.to raise_error(Puppet::Error, /hash/)
     end
-  end
 
+    context "the properties param" do
+      { "a simple name/value hash" => { 'ensure' => 'present' },
+        "a simple name/array hash" => { 'ensure' => [ 'installed', 'latest' ] },
+      }.each_pair do |description,value|
+        it "should accept #{description}" do
+          expect {
+            described_class.new(:name => 'foo', :resource => resource,
+              :properties => value).validate
+          }.to_not raise_error
+        end
+      end
+    end
+  end
 end

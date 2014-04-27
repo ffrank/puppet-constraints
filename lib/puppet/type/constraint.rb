@@ -100,8 +100,10 @@ module Puppet
     #
     # By faking the ability to autorequire, we can meet those requirements,
     # although the practice is questionable in terms of code semantics.
-    autorequire(:constraint) do
-      prerun_check
+    unless Puppet::Type.instance_methods(false).include?(:prerun_check)
+      autorequire(:constraint) do
+        prerun_check
+      end
     end
 
     def prerun_check

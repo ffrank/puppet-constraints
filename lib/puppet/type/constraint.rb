@@ -22,6 +22,8 @@ module Puppet
           { ensure => { forbidden => [ purged, absent ] } }"
 
       validate do |value|
+        return unless value
+
         fail "properties must be a hash" unless value.is_a?(Hash)
 
         value.each do |key,val|
@@ -35,11 +37,10 @@ module Puppet
           fail "property #{key} must have an array or string for its value list, not #{val.values[0].inspect}" \
             if val.values[0].is_a?(Hash) or val.values[0].empty?
         end
-
-	# TODO: check the structure and content of the hash
       end
 
       munge do |value|
+        return nil unless value
         result = {}
         value.each_pair do |prop,propval|
           if [ String, Array ].include? propval.class
@@ -70,10 +71,59 @@ module Puppet
         end
       end
 
-      defaultto do
-        {}
-      end
+    end
 
+    { :allow => 'whitelist', :forbid => 'blacklist' }.each do |param,description|
+      newparam(param) do
+        desc "Hash of #{description}ed values for property values.
+
+        Examples:
+            { enable => true}
+
+            { ensure => [ installed, latest ] }"
+
+        validate do |value|
+          return unless value
+
+          fail "#{param} must be a hash" unless value.is_a?(Hash)
+
+          value.each do |prop,values|
+            fail "#{description} for #{prop} must be a non-empty value, not #{values.inspect}" \
+              if values.empty?
+            fail "#{description} for #{prop} must be an array or string, not #{values.inspect}" \
+              unless values.is_a?(String) or values.is_a?(Array)
+            fail "#{description} for #{prop} can only contain strings" \
+              unless [ values ].flatten.reject { |x| x.is_a? String }.empty?
+          end
+        end
+
+        munge do |value|
+          return nil unless value
+          result = {}
+          value.each_pair do |prop,values|
+            result[prop] = [ values ].flatten
+          end
+          recursive_intern(result)
+        end
+
+        def recursive_intern(value)
+          case value
+          when String
+            return value.intern
+          when Array
+            return value.map { |v| recursive_intern v }
+          when Hash
+            result = {}
+            value.keys.each do |k|
+              result[k.intern] = recursive_intern(value[k])
+            end
+            return result
+          else
+            devfail "constraint trying to intern #{value.inspect} of type #{value.class}"
+          end
+        end
+
+      end
     end
 
     newparam(:name) do
@@ -85,11 +135,21 @@ module Puppet
     validate do
       fail "resource must be specified" \
         if !self[:resource] or self[:resource].empty?
+      fail "either of properties,allow,forbid must be specified" \
+        unless self[:properties] or self[:allow] or self[:forbid]
+      fail "properties cannot be mixed with allow and forbid" \
+        if self[:properties] and ( self[:allow] or self[:forbid] )
+
+      if self[:allow] and self[:forbid]
+        duplicates = self[:allow].keys & self[:forbid].keys
+        fail "cannot both allow and forbid values for #{duplicates * ","}" \
+          unless duplicates.empty?
+      end
+
       # this check cannot move into parameter validation because the
       # conversion to Puppet::Resource has not taken place yet then
       fail "resource must be a(n array of) resource reference(s)" \
         if ! self[:resource].select { |res| ! res.is_a? Puppet::Resource }.empty?
-      fail "properties must be specified" unless self[:properties]
     end
 
     # Compatibility hack: we have no lifecycle method of resources' that fits
@@ -111,22 +171,44 @@ module Puppet
         resource = self.catalog.resource(reference.to_s)
         raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource
 
-        Puppet.debug "Checking constraint on #{self[:resource]} #{self[:properties].inspect}"
-
-        self[:properties].each_pair do |property,constraint|
-          constraint.each_pair do |constraint_type,constraint_values|
-            case constraint_type
-            when :allowed
-              next if constraint_values.include?(resource[property])
-              raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
-            when :forbidden
-              next unless constraint_values.include?(resource[property])
-              raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
-            end
-          end
+        if self[:properties]
+          check_properties_hash(resource)
+        else
+          check_black_and_white_lists(resource)
         end
       end
       true
+    end
+
+    def check_properties_hash(resource)
+      Puppet.debug "Checking constraint on #{self[:resource]} #{self[:properties].inspect}"
+
+      self[:properties].each_pair do |property,constraint|
+        constraint.each_pair do |constraint_type,constraint_values|
+          case constraint_type
+          when :allowed
+            next if constraint_values.include?(resource[property])
+            raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
+          when :forbidden
+            next unless constraint_values.include?(resource[property])
+            raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+          end
+        end
+      end
+    end
+
+    def check_black_and_white_lists(resource)
+      Puppet.debug "Checking constraint on #{self[:resource]} allow=#{self[:allow].inspect} forbid=#{self[:forbid].inspect}"
+
+      ( self[:allow] || {} ).each_pair do |property,constraint_values|
+        next if constraint_values.include?(resource[property])
+        raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is not among the allowed [#{ constraint_values * ','}]"
+      end
+
+      ( self[:forbid] || {} ).each_pair do |property,constraint_values|
+        next unless constraint_values.include?(resource[property])
+        raise Puppet::Error, "#{resource.ref}/#{property} is '#{resource[property]}' which is forbidden"
+      end
     end
 
     @doc = "Constraints allow modules to express dependencies on resources 

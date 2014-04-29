@@ -9,9 +9,7 @@ Origin: https://github.com/ffrank/puppet-constraints
 
 Released under the terms of the Apache 2 License.
 
-This module requires Puppet to be patched in order to perform and respect
-the checks of constraints. The patch is available in
-[a topic branch](https://github.com/ffrank/puppet/tree/ticket/master/PUP-2298-transaction-pre-run-checks).
+This module has passed basic testing with all Puppet versions since 2.6.0.
 
 Authored by Felix Frank.
 

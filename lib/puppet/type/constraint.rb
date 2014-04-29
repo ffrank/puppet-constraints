@@ -135,8 +135,6 @@ module Puppet
     validate do
       fail "resource must be specified" \
         if !self[:resource] or self[:resource].empty?
-      fail "either of properties,allow,forbid must be specified" \
-        unless self[:properties] or self[:allow] or self[:forbid]
       fail "properties cannot be mixed with allow and forbid" \
         if self[:properties] and ( self[:allow] or self[:forbid] )
 

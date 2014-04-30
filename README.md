@@ -81,23 +81,22 @@ A resource reference, such as you would use with relationship metaparameters
 like `before` or `notify`.
 
 **Example**
-```puppet
-  resource => [ Package["apache2"], File["/etc/apache2","/var/www"] ]
-```
+
+    resource => [ Package["apache2"], File["/etc/apache2","/var/www"] ]
 
 ####properties
 
 Composite parameter to specify all constraint values for all target properties.
 The value must be a nested hash with the following structure:
-```puppet
-{ property_name => {
-    value_type => {
-      value_list
+
+    { property_name => {
+        value_type => {
+          value_list
+        }
+      },
+      ...
     }
-  },
-  ...
-}
-```
+
 where
  - `property_name` is just a name of a resource property such as `ensure`, `enable`, `command` ...
  - `value_type` is either `allowed` or `forbidden`, resulting in a whitelist or blacklist respectively
@@ -115,9 +114,9 @@ Declare whitelists of acceptable values for an arbitrary subset
 of the [target resource's](#resource) properties.
 
 The value must be a hash with the structure:
-```puppet
-{ property_name => value_list, ... }
-```
+
+    { property_name => value_list, ... }
+
 where `property_name` and `value_list` have the same semantics as described
 for the [properties parameter](#properties).
 

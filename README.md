@@ -56,7 +56,7 @@ constraint {
 }
 ```
 
-**Note:** Single element list can be shortened to a string.
+**Note:** A single element list can be shortened to a string.
 ```puppet
 constraint {
   'foo': resource   => Package['apache2'],
@@ -69,7 +69,7 @@ by skipping the `allowed` key (it is implied then)
 ```puppet
 constraint {
   'foo': resource   => Package['apache2'],
-         properties => { allowed => present };
+         properties => { ensure => present };
 }
 ```
 

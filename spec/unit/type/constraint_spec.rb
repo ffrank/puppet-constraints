@@ -104,5 +104,54 @@ describe constraint do
       end
     end
 
+    context "when checking constraints" do
+      let(:resources) do
+        %w{/foo /bar /baz}.collect { |name|
+          Puppet::Type.type(:file).new(:name => name, :ensure => :present)
+        }
+      end
+      let(:refs) do
+        resources.map { |res| Puppet::Resource.new(res.ref) }
+      end
+      subject do
+        described_class.new(
+          :name => 'foo',
+          :resource => refs[0,1],
+          :allow => { 'ensure' => 'present' },
+        )
+      end
+      let(:catalog) { Puppet::Resource::Catalog.new }
+
+      context "with missing resources" do
+        before :each do
+          catalog.add_resource(*resources[1,2])
+          subject.stubs(:catalog).returns catalog
+        end
+
+        it "should raise an error" do
+          expect { subject.pre_run_check }.to raise_error(/cannot be found/)
+        end
+
+        context "in weak mode" do
+          subject do
+            described_class.new(
+              :name => 'foo',
+              :resource => refs[0..1],
+              :allow => { 'ensure' => 'present' },
+              :weak => true,
+            )
+          end
+          it "should not raise an error" do
+            subject.pre_run_check
+          end
+          it "should check the resources that are found" do
+            subject.expects(:check_black_and_white_lists).with(resources[1])
+            subject.pre_run_check
+          end
+        end
+      end
+
+    end
+
   end
 end

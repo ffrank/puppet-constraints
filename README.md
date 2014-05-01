@@ -73,6 +73,12 @@ constraint {
 }
 ```
 
+###Weak constraints
+
+Usually, constraint checks fail if the subjected resource is not found
+in the catalog. A *weak constraint* only checks property values and silently
+accepts the absence of any subject resource from the catalog.
+
 ###Available parameters
 
 ####resource
@@ -125,3 +131,9 @@ for the [properties parameter](#properties).
 This parameter is similar to the [allow parameter](#allow), but instead of declaring
 acceptable whitelists, it is about blacklists of values that the
 [resource(s)](#resource) must not use.
+
+####weak
+
+Boolean parameter to mark a constraint as [weak](#weak-constraints).
+
+Defaults to `false`.

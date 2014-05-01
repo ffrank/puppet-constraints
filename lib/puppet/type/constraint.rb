@@ -11,6 +11,14 @@ module Puppet
       end
     end
 
+    newparam(:weak) do
+      desc "Mark a constraint as weak, meaning that a missing resource will
+        not cause the constraint check to fail."
+
+      newvalues(:true, :false)
+      defaultto :false
+    end
+
     newparam(:properties) do
       desc "A hash of hashes. Keys in the first layer are property names. 
       Possible keys in the second layer are: forbidden, allowed.
@@ -167,7 +175,11 @@ module Puppet
     def pre_run_check
       self[:resource].each do |reference|
         resource = self.catalog.resource(reference.to_s)
-        raise "the resource #{self[:resource]} cannot be found in the catalog" unless resource
+        unless resource
+          # weak constraints just skip unmanaged resources
+          next if self[:weak] == :true
+          raise "the resource #{self[:resource]} cannot be found in the catalog"
+        end
 
         if self[:properties]
           check_properties_hash(resource)

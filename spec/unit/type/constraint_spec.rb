@@ -85,5 +85,24 @@ describe constraint do
       end
     end
 
+    describe "the weak parameter" do
+      it "should accept true and false values" do
+        expect {
+          described_class.new(:name => 'foo', :resource => resource,
+            :weak => :true).validate
+          described_class.new(:name => 'foo', :resource => resource,
+            :weak => :false).validate
+        }.to_not raise_error
+      end
+      it "should not accept non-boolean values" do
+        [ :foo, 'bar', %w{foo bar}, { :foo => :bar } ].each do |value|
+          expect {
+            described_class.new(:name => 'foo', :resource => resource,
+              :weak => value).validate
+          }
+        end
+      end
+    end
+
   end
 end

@@ -55,7 +55,35 @@ describe constraint do
           }.to raise_error
         end
       end
-
     end
+
+    [ :allow, :forbid ].each do |param|
+      describe "the #{param} parameter" do
+        { "a hash with string values" => { 'ensure' => 'present' },
+          "a hash with array values" => { 'ensure' => [ 'installed', 'latest' ] },
+        }.each_pair do |description,value|
+          it "should accept #{description}" do
+            expect {
+              described_class.new(:name => 'foo', :resource => resource,
+                param => value).validate
+            }.to_not raise_error
+          end
+        end
+
+        { "a string" => 'present',
+          "an array" => [ 'installed', 'latest' ],
+          "a hash with more hash values" =>
+            { 'ensure' => { 'allowed' => :true } },
+        }.each_pair do |description,value|
+          it "should not accept #{description}" do
+            expect {
+              described_class.new(:name => 'foo', :resource => resource,
+                :properties => value).validate
+            }.to raise_error
+          end
+        end
+      end
+    end
+
   end
 end

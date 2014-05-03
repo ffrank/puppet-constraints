@@ -12,6 +12,15 @@ This module has passed basic testing with all Puppet versions since 2.6.0.
 
 Authored by Felix Frank.
 
+###Contents
+
+ 1. [Overview](#overview)
+ 2. [Usage](#usage)
+  * [Syntax overview](#syntax-overview)
+  * [Weak constraints](#weak-constraints)
+  * [Available parameters](#available-parameters)
+ 3. [Replacing existing functions](#replacing-existing-functions)
+
 ##Overview
 
 This module implements `constraints`, a new meta type that aims

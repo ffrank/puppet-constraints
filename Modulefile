@@ -1,5 +1,5 @@
 name 'ffrank-constraints'
-version '0.1.0'
+version '0.2.0'
 author 'Felix Frank'
 summary 'Puppet module that implements the constraint type'
 description 'The constraint type aims to lift the need for both

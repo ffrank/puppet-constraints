@@ -15,10 +15,13 @@ Authored by Felix Frank.
 ##Overview
 
 This module implements `constraints`, a new meta type that aims
-to make both the `ensure_resources` function and the `defined` function obsolete.
+to make both the `ensure_resource` function and the `defined` function obsolete.
 More information can be found in John Bollinger's
 [original mailing list post](https://groups.google.com/d/msg/puppet-users/Fvl0aOe4RPE/Ph38bq3FmHcJ)
 which explains their motivation, lays out their semantics and sketches their syntax.
+
+See [below](#replacing-existing-functions) for details on how to replace
+`ensure_resource` and `defined` with `constraint` based constructs.
 
 ##Usage
 
@@ -137,3 +140,59 @@ acceptable whitelists, it is about blacklists of values that the
 Boolean parameter to mark a constraint as [weak](#weak-constraints).
 
 Defaults to `false`.
+
+##Replacing existing functions
+
+####ensure\_resource
+
+The `constraint` quite trivially and naturally replaces any call to
+`ensure_resource` (from the `puppetlabs-stdlib` module).
+You only need to pick an appropriate name for the `constraint`.
+
+**Example:**
+```puppet
+ensure_resource('user', [ 'dan', 'alex' ], { ensure => present })
+```
+becomes
+```puppet
+constraint {
+    "users-dan-alex":
+        resource => User['dan','alex'],
+        allow    => { ensure => present };
+}
+```
+
+**Note:** While `ensure_resource` will create the resources if they
+have not been encountered at the time of evaluation, the same *does not happen*
+with the `constraint`. However, the constraint will present a meaningful
+error message to the user, alerting them that the resources must be added
+to the manifest.
+
+####defined
+
+A common escape from resource duplication among modules is this anti-pattern:
+```puppet
+if !defined(Package['apache2']) {
+    package { 'apache2': ensure => 'installed' }
+}
+```
+
+This is dangerous and will lead to unpredictable manifest behavior for users.
+The following `constraint` is more appropriate:
+
+```puppet
+constraint {
+    "apache-package-for-mymodule":
+        resource => Package['apache2'],
+        allow    => { ensure => [ 'installed', 'present', 'latest' ] };
+}
+```
+
+Not only is this evaluation order independent, it also caters to users who
+prefer either the `latest` or `installed` should-value, because either is
+likely acceptable for your module.
+
+**Note:** Unlike the `defined` construct, a `constraint` will not declare
+the resource on its own. However, the constraint will present a meaningful
+error message to the user, alerting them that the resources must be added
+to the manifest.

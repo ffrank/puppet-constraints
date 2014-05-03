@@ -83,7 +83,7 @@ module Puppet
 
     { :allow => 'whitelist', :forbid => 'blacklist' }.each do |param,description|
       newparam(param) do
-        desc "Hash of #{description}ed values for property values.
+        desc "Hash of #{description}ed values for properties.
 
         Examples:
             { enable => true}

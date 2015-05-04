@@ -7,7 +7,13 @@ module Puppet
       # TODO validation
 
       munge do |value|
-        [ value ].flatten
+        [ value ].flatten.map do |v|
+	  if v.is_a? String
+	    Puppet::Resource.new(v)
+	  else
+	    v
+	  end
+	end
       end
     end
 

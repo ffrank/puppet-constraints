@@ -25,6 +25,31 @@ describe constraint do
       }.to_not raise_error
     end
 
+    describe "the resource parameter" do
+      context "when munging values" do
+        it "should return an array" do
+          constraint = described_class.new(:name => 'foo', :resource => 'File["/tmp"]')
+          expect(constraint[:resource]).to be_an Array
+        end
+
+        it "should parse strings into resources" do
+          constraint = described_class.new(:name => 'foo', :resource => 'File["/tmp"]')
+          expect(constraint[:resource][0]).to be_a Puppet::Resource
+        end
+
+        it "should accept resource references unchanged" do
+          constraint = described_class.new(:name => 'foo', :resource => resource)
+          expect(constraint[:resource][0]).to eq resource
+        end
+
+        it "should fail if the input is invalid" do
+          expect {
+            constraint = described_class.new(:name => 'foo', :resource => 'not a resource')
+          }.to raise_error
+        end
+      end
+    end
+
     context "the properties param" do
       { "a simple name/value hash" => { 'ensure' => 'present' },
         "a simple name/array hash" => { 'ensure' => [ 'installed', 'latest' ] },

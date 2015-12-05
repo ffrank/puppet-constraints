@@ -1,5 +1,5 @@
 module Puppet
-  newtype(:constraint) do
+  Puppet::Type.newtype(:constraint) do
 
     newparam(:resource) do
       desc "A reference to the resource that is being constrained."

@@ -1,8 +1,13 @@
 # Pre-releases
 
+#### 0.2.2 2015-12-05
+
+ * (#2) avoid deprecation warnings from Puppet 4
+  * thanks to @TravellingGuy for reporting and fixing
+
 #### 0.2.1 2015-05-22
 
- * #1: master/agent operation does not work
+ * (#1) master/agent operation does not work
   * thanks to Mike Raynham [@mikeraynham] for reporting
 
 #### 0.2.0 2014-05-03

@@ -1,0 +1,11 @@
+{
+  "name": "ffrank-constraints",
+  "version": "0.2.2",
+  "author": "Felix Frank",
+  "summary": "Puppet module that implements the constraint type",
+  "license": "Apache-2.0",
+  "source": "https://github.com/ffrank/puppet-constraints",
+  "issues_url": "https://github.com/ffrank/puppet-constraints/issues",
+  "project_page": "https://github.com/ffrank/puppet-constraints",
+  "dependencies": []
+}
